@@ -1,0 +1,211 @@
+---
+title: "2023.06.12_Slingshot Data"
+author: "Haroon Riyaz"
+date: "2023-06-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(data.table)
+SKCMexpression <- data.frame(fread("SKCM_CellLines.txt"))
+  
+  
+  ### Formats annotation data 
+  
+  SKCMannotation <- read.table("SKCM_group_annotation.txt")
+  SKCMannotation[20:21,2] <- NA # Make UPMD1 and WM3772F NA
+  
+  rownames(SKCMannotation) <- SKCMannotation[,1]
+  
+  
+  ### Formats expression data. Removes duplicated genes and makes gene names the row-names 
+  
+  #SKCMexpression <- SKCMexpression[-which(duplicated(SKCMexpression$gene)),]
+  
+  rownames(SKCMexpression) <- SKCMexpression$gene
+  SKCMexpression <- SKCMexpression[,-1]
+
+  
+```
+
+```{r}
+# SlingshotNOCLUSTERINFO(expression = SKCMexpression, meta = SKCMannotation, meta_trait = "Group", start.clus = "SKCM4", PCX1 = 1, PCX2 = 2, text_size = 1.5, nfeatures = 5000, npcs = 10)
+```
+
+```{r}
+SlingshotNOCLUSTERINFO(expression = SKCMexpression, meta = SKCMannotation, meta_trait = "Group", start.clus = "SKCM4", nfeatures = 5000, npcs = 10)
+```
+
+```{r}
+plot_SlingshotNOCLUSTERINFO(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 1, PCX2 = 2, text_size = 1.5)
+```
+
+```{r}
+plot_SlingshotNOCLUSTERINFO(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 2, PCX2 = 3, text_size = 1.5)
+```
+
+
+```{r}
+plot_SlingshotNOCLUSTERINFO(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 1, PCX2 = 3, text_size = 1.5)
+```
+
+
+
+###
+TCGA
+###
+
+### Load Log2 gene expression set (normalization already done through log2 and not full quantile normalization in 2.2)
+```{r}
+library(data.table)
+library(readxl)
+
+XENAexpression <- readr::read_tsv("TCGA-UVM.htseq_counts.tsv") # data already log2(count+1)
+```
+
+### Format expression file 
+```{r}
+# Converts into DF for proper formatting 
+XENAexpression <- as.data.frame(XENAexpression) 
+
+# Removes "-01A" text from all column names 
+XENAcolnames <- colnames(XENAexpression)
+formatted_xena_colnames <- sub("-01A", "", XENAcolnames)
+formatted_xena_colnames <- sub("-01B", "", formatted_xena_colnames)
+formatted_xena_colnames <- sub("-", ".", formatted_xena_colnames)
+formatted_xena_colnames <- sub("-", ".", formatted_xena_colnames)
+
+colnames(XENAexpression) <- formatted_xena_colnames
+```
+
+### Formats expression data. Removes duplicated genes and makes gene names the row-names 
+```{r}
+#XENAexpression <- XENAexpression[-which(duplicated(XENAexpression$Ensembl_ID)),]
+
+rownames(XENAexpression) <- XENAexpression[,1]
+XENAexpression <- XENAexpression[,-1]
+```
+
+### Formats annotation data 
+```{r}
+XENAannotation <- as.data.frame(read_xlsx("TCGA_BAP1.xlsx"))
+rownames(XENAannotation) <- XENAannotation[,1]
+```
+
+```{r}
+# SlingshotNOCLUSTERINFO(expression = XENAexpression, meta = XENAannotation, meta_trait = "Group No.", start.clus = "1", PCX1 = 1, PCX2 = 2, text_size = 1.5, nfeatures = 5000, npcs = 10)
+```
+
+```{r}
+SlingshotNOCLUSTERINFO(expression = XENAexpression, meta = XENAannotation, meta_trait = "Group No.", start.clus = "1", nfeatures = 5000, npcs = 10)
+```
+
+```{r}
+plot_SlingshotNOCLUSTERINFO(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 1, PCX2 = 2, text_size = 1.5)
+```
+
+```{r}
+plot_SlingshotNOCLUSTERINFO(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 2, PCX2 = 3, text_size = 1.5)
+```
+
+```{r}
+plot_SlingshotNOCLUSTERINFO(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 1, PCX2 = 3, text_size = 1.5)
+```
+
+```{r}
+plot3d_SlingshotNOCLUSTERINFO(sds = sds, meta = meta, meta_trait = meta_trait)
+
+```
+
+
+
+
+
+```{r}
+sds_redctns <- reducedDim(sds)
+groupcolor_ind <- match(rownames(sds_redctns), rownames(meta))
+clusters <- meta$Group[groupcolor_ind]
+
+group_colors <- c("purple", "red", "green3", "blue", "black",   "darkkhaki")
+color_vector <- group_colors[match(clusters, unique(clusters))]
+
+plot3d(reducedDim(sds), size = 4, colvar = clusters, col = color_vector)#, col = meta$Group) 
+plot3d.SlingshotDataSet(sds, lwd = 3, add = TRUE)
+text3d(sds_redctns[,1], sds_redctns[,2], sds_redctns[,3], texts = rownames(sds_redctns), add = TRUE, cex = 0.65, adj = c(1, 1))
+color_legend <- c("red", "darkkhaki", "green3", "blue", "pink", "black")
+legend3d("topright", legend = c("1","2","3","4c","4s","NA"), pch = 16, col = color_legend, cex=1, inset=c(0.02))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+ 
+  
+  
+  
+  
+  #Load gene expression data
+  seur_obji <- read.csv("UVM_UCLA_BROAD_geneexp_22Q4_pc_genes_log2.csv")  
+  seur_obji <- seur_obji[-which(duplicated(seur_obji$gene)),]
+  rownames(seur_obji) <- seur_obji$gene
+  seur_obji <- seur_obji[,-1]
+  
+  
+  #Load annotation data
+  meta <- read.csv("UVM_UCLA_BROAD_22Q4_annotation_file.csv")
+  rownames(meta) <- meta[,1]
+  meta$cellline <- 0
+  
+    #NEW META FILE
+    # meta2 <- meta
+    # meta2$Group[(which(!(meta2$Group == "4c")))] <- NA
+  
+  new_meta <- meta
+  new_meta[c("MEL202.BROAD", "MEL202.UCLA", "X921.BROAD", "X92.1.UCLA"),"Group"] <- 1
+  new_meta[c("MP41.UCLA", "OMM1.BROAD"),"Group"] <- 2
+  new_meta[c("UPMD1.BROAD", "MEL270.BROAD"),"Group"] <- 3
+  new_meta[c("MEL070.UCLA", "MEL270.repeat.UCLA", "OMM1.5.UCLA", "OMM1.3.UCLA", "OMM25.BROAD"),"Group"] <- 4
+  new_meta[c("MEL285.BROAD", "MEL290.BROAD"),"Group"] <- 5
+  new_meta[c("MP46.BROAD", "WM3772F.BROAD"),"Group"] <- 6
+  new_meta[c("MM28.UCLA", "MEL196.UCLA"),"Group"] <- 7
+  new_meta[c("MEL045.UCLA", "MP38.UCLA"),"Group"] <- 8
+```
+
+
+
+
+
+
+
+
+
+
+
