@@ -1,0 +1,347 @@
+---
+title: "230724_TCGAvsUVM"
+author: "Haroon Riyaz"
+date: "2023-07-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+~~~~~~~~~
+#Packages
+~~~~~~~~~
+
+```{r}
+library(readxl)
+library(data.table)
+```
+
+
+
+
+~~~~~~~~~~~~~~~~
+#TCGA Tumor Data
+~~~~~~~~~~~~~~~~
+
+
+##Formatting
+
+Load Log2 gene expression set (normalization already done through log2(count+1))
+```{r}
+XENAexpression <- readr::read_tsv("TCGA-UVM.htseq_counts.tsv") 
+```
+
+Format expression file
+```{r}
+XENAexpression <- as.data.frame(XENAexpression) 
+
+# Removes "-01A" text from all column names 
+XENAcolnames <- colnames(XENAexpression)
+formatted_xena_colnames <- sub("-01A", "", XENAcolnames)
+formatted_xena_colnames <- sub("-01B", "", formatted_xena_colnames)
+formatted_xena_colnames <- sub("-", ".", formatted_xena_colnames)
+formatted_xena_colnames <- sub("-", ".", formatted_xena_colnames)
+
+colnames(XENAexpression) <- formatted_xena_colnames
+```
+
+Makes gene names the row-names
+```{r}
+rownames(XENAexpression) <- XENAexpression[,1]
+XENAexpression <- XENAexpression[,-1]
+```
+
+Format annotation data 
+```{r}
+XENAannotation <- as.data.frame(read_xlsx("TCGA_BAP1.xlsx"))
+rownames(XENAannotation) <- XENAannotation[,1]
+```
+
+
+##Without DST_MTHD
+
+
+###Slingshot 
+
+```{r}
+glab_Slingshot(expression = XENAexpression, meta = XENAannotation, meta_trait = "Group No.", start.clus = "1", nfeatures = 5000, npcs = 10)
+```
+
+
+###Plot
+
+```{r}
+glab_Slingshot_plot(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 1, PCX2 = 2, text_size = 1.5)
+```
+
+```{r}
+glab_Slingshot_plot(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 2, PCX2 = 3, text_size = 1.5)
+```
+
+```{r}
+glab_Slingshot_plot(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 1, PCX2 = 3, text_size = 1.5)
+```
+
+
+###3D Plot
+
+```{r}
+glab_Slingshot_plot_3D(sds = sds, meta = meta, meta_trait = meta_trait)
+```
+
+
+##Scaled Distance Method
+
+
+###Slingshot 
+
+```{r}
+glab_Slingshot(expression = XENAexpression, meta = XENAannotation, meta_trait = "Group No.", start.clus = "1", nfeatures = 5000, npcs = 10, dist.method = "scaled.diag")
+```
+
+
+###Plot
+
+```{r}
+glab_Slingshot_plot(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 1, PCX2 = 2, text_size = 1.5)
+```
+
+```{r}
+glab_Slingshot_plot(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 2, PCX2 = 3, text_size = 1.5)
+```
+
+```{r}
+glab_Slingshot_plot(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 1, PCX2 = 3, text_size = 1.5)
+```
+
+###3D Plot
+
+```{r}
+glab_Slingshot_plot_3D(sds = sds, meta = meta, meta_trait = meta_trait)
+```
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~
+#SKCM Cell-line Data
+~~~~~~~~~~~~~~~~~~~~
+
+
+##Formatting 
+
+Load Log2 gene expression set (normalization already done through log2(count+1))
+```{r}
+SKCMexpression <- data.frame(fread("SKCM_CellLines.txt"))
+```
+
+Format expression file
+```{r}
+rownames(SKCMexpression) <- SKCMexpression$gene   
+  SKCMexpression <- SKCMexpression[,-1] 
+```
+
+Format annotation data 
+```{r}
+SKCMannotation <- read.table("SKCM_group_annotation.txt")  
+SKCMannotation[20:21,2] <- NA # Make UPMD1 and WM3772F NA
+  
+rownames(SKCMannotation) <- SKCMannotation[,1]
+```
+
+
+##Without DST_MTHD
+
+
+###Slingshot 
+
+```{r}
+glab_Slingshot(expression = SKCMexpression, meta = SKCMannotation, meta_trait = "Group", start.clus = "SKCM4", nfeatures = 5000, npcs = 10)
+```
+
+
+###Plot
+
+```{r}
+glab_Slingshot_plot(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 1, PCX2 = 2, text_size = 1.5)
+```
+
+```{r}
+glab_Slingshot_plot(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 2, PCX2 = 3, text_size = 1.5)
+```
+
+```{r}
+glab_Slingshot_plot(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 1, PCX2 = 3, text_size = 1.5)
+```
+
+
+###3D Plot
+
+```{r}
+glab_Slingshot_plot_3D(sds = sds, meta = meta, meta_trait = meta_trait)
+```
+
+
+##Scaled Distance Method
+
+
+###Slingshot 
+
+```{r}
+glab_Slingshot(expression = SKCMexpression, meta = SKCMannotation, meta_trait = "Group", start.clus = "SKCM4", nfeatures = 5000, npcs = 10, dist.method = "scaled.diag")
+```
+
+
+###Plot
+
+```{r}
+glab_Slingshot_plot(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 1, PCX2 = 2, text_size = 1.5)
+```
+
+```{r}
+glab_Slingshot_plot(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 2, PCX2 = 3, text_size = 1.5)
+```
+
+```{r}
+glab_Slingshot_plot(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 1, PCX2 = 3, text_size = 1.5)
+```
+
+
+###3D Plot
+
+```{r}
+glab_Slingshot_plot_3D(sds = sds, meta = meta, meta_trait = meta_trait)
+```
+
+
+
+
+~~~~~~~~~~~~~~~~~~~
+#UVM Cell-line Data
+~~~~~~~~~~~~~~~~~~~
+
+
+##Formatting 
+
+Load Log2 gene expression set (normalization already done through log2(count+1))
+```{r}
+UVMexpression <- fread("UVM_UCLA_BROAD_geneexp_22Q4_pc_genes_log2.csv") 
+```
+
+Format expression file
+```{r}
+UVMexpression <- as.data.frame(UVMexpression) 
+```
+
+Makes gene names the row-names
+```{r}
+UVMexpression <- UVMexpression[-which(duplicated(UVMexpression$gene)),]
+rownames(UVMexpression) <- UVMexpression$gene
+UVMexpression <- UVMexpression[,-1]
+```
+
+Formats annotation data 
+```{r}
+UVMannotation <- read.csv("UVM_UCLA_BROAD_22Q4_annotation_file.csv")
+rownames(UVMannotation) <- UVMannotation[,1]
+UVMannotation$cellline <- 0
+```
+
+* OTHER FORMATTING * Different grouping for UVM cell-lines
+```{r}
+newUVMannotation <- UVMannotation
+newUVMannotation[c("MEL202.BROAD", "MEL202.UCLA", "X921.BROAD", "X92.1.UCLA"),"Group"] <- 1
+newUVMannotation[c("MP41.UCLA", "OMM1.BROAD"),"Group"] <- 2
+newUVMannotation[c("UPMD1.BROAD", "MEL270.BROAD"),"Group"] <- 3
+newUVMannotation[c("MEL070.UCLA", "MEL270.repeat.UCLA", "OMM1.5.UCLA", "OMM1.3.UCLA", "OMM25.BROAD"),"Group"] <- 4
+newUVMannotation[c("MEL285.BROAD", "MEL290.BROAD"),"Group"] <- 5
+newUVMannotation[c("MP46.BROAD", "WM3772F.BROAD"),"Group"] <- 6
+newUVMannotation[c("MM28.UCLA", "MEL196.UCLA"),"Group"] <- 7
+newUVMannotation[c("MEL045.UCLA", "MP38.UCLA"),"Group"] <- 8
+```
+
+
+##Without DST_MTHD
+
+
+###Slingshot 
+
+The method for calculating distances between clusters normally used by Slingshot does not work with 10 PCs. Using "scaled.diag" instead fixes this issue. 
+
+```{r}
+glab_Slingshot(expression = UVMexpression, meta = UVMannotation, meta_trait = "Group", start.clus = "4c", nfeatures = 5000, npcs = 10)
+```
+
+
+##Scaled Distance Method
+
+
+###Slingshot 
+
+```{r}
+glab_Slingshot(expression = UVMexpression, meta = UVMannotation, meta_trait = "Group", start.clus = "4c", nfeatures = 5000, npcs = 10, dist.method = "scaled.diag")
+```
+
+
+###Plot
+
+```{r}
+glab_Slingshot_plot(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 1, PCX2 = 2, text_size = 1.5)
+```
+
+```{r}
+glab_Slingshot_plot(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 2, PCX2 = 3, text_size = 1.5)
+```
+
+```{r}
+glab_Slingshot_plot(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 1, PCX2 = 3, text_size = 1.5)
+```
+
+
+###3D Plot
+
+```{r}
+glab_Slingshot_plot_3D(sds = sds, meta = meta, meta_trait = meta_trait)
+```
+
+
+## OTHER FORMATTING 
+
+
+###Slingshot
+
+```{r}
+glab_Slingshot(expression = UVMexpression, meta = newUVMannotation, meta_trait = "Group", start.clus = "1", nfeatures = 5000, npcs = 10, dist.method = "scaled.diag")
+```
+
+
+###Plot
+
+```{r}
+glab_Slingshot_plot(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 1, PCX2 = 2, text_size = 1.5)
+```
+
+```{r}
+glab_Slingshot_plot(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 2, PCX2 = 3, text_size = 1.5)
+```
+
+```{r}
+glab_Slingshot_plot(rd = rd, clusters = clusters, curves = curves, MST = MST, PCX1 = 1, PCX2 = 3, text_size = 1.5)
+```
+
+
+###3D Plot
+
+```{r}
+glab_Slingshot_plot_3D(sds = sds, meta = meta, meta_trait = meta_trait)
+```
+
+
+
+
+

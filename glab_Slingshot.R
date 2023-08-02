@@ -1,4 +1,4 @@
-glab_Slingshot <- function(expression, meta, meta_trait, start.clus, nfeatures, npcs){
+glab_Slingshot <- function(expression, meta, meta_trait, start.clus, nfeatures, npcs, dist.method = "slingshot"){
 
   suppressPackageStartupMessages({
     library(Seurat); library(slingshot); library(SingleCellExperiment)
@@ -23,7 +23,8 @@ glab_Slingshot <- function(expression, meta, meta_trait, start.clus, nfeatures, 
 
   #Run Slingshot
   clusters <- meta[match(rownames(rd), rownames(meta)),meta_trait]
-  sling_obj <- slingshot(sce_obj,  reducedDim = 'PCA', clusterLabels = clusters, start.clus = start.clus)
+  #sling_obj <- slingshot(sce_obj,  reducedDim = 'PCA', clusterLabels = clusters, start.clus = start.clus) #does not indicate dist.method: "scaled.diag"
+  sling_obj <- slingshot(sce_obj,  reducedDim = 'PCA', clusterLabels = clusters, start.clus = start.clus, dist.method = dist.method)
 
   #Curves
   curves <- slingCurves(sling_obj, as.df = TRUE)
